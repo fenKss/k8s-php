@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "app.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+{{/*          livenessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /*/}}
+{{/*              port: http*/}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /*/}}
+{{/*              port: http*/}}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: {{ template "app.fullname" . }}-assets
+              mountPath: /var/www/app
+        - name: nginx
+          image: nginx:alpine
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          volumeMounts:
+          - name: {{ template "app.fullname" . }}-nginx
+            mountPath: /etc/nginx/conf.d/default.conf
+            subPath: default.conf
+          - name: {{ template "app.fullname" . }}-assets
+            mountPath: /var/www/app
+      volumes:
+        - name: {{ template "app.fullname" . }}-nginx
+          configMap:
+            name: {{ template "app.fullname" . }}-nginx
+        - name: {{ template "app.fullname" . }}-assets
+          emptyDir: { }
+      initContainers:
+        - name: {{ template "app.fullname" . }}-assets
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: Never
+          command: ['sh', '-c', "cp -rT /tmp/app /var/www/app"]
+          volumeMounts:
+            - name: {{ template "app.fullname" . }}-assets
+              mountPath: /var/www/app/
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
