@@ -60,8 +60,10 @@ tolerations: []
 affinity: {}
 
 
-mariadb:
+mysql:
+  fullnameOverride: "app-mysql"
   auth:
     password: "1"
     rootPassword: "1"
     username: "app"
+    database: "app"
