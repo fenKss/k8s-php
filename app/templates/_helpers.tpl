@@ -34,6 +34,8 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "app.labels" -}}
+app: {{ include "app.fullname" . }}
+version: {{ .Chart.Version }}
 helm.sh/chart: {{ include "app.chart" . }}
 {{ include "app.selectorLabels" . }}
 {{- if .Chart.AppVersion }}

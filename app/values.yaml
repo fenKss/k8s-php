@@ -59,7 +59,6 @@ tolerations: []
 
 affinity: {}
 
-
 mysql:
   fullnameOverride: "app-mysql"
   auth:

@@ -29,3 +29,8 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     tags:
       - app-database
+#  - name: kiali-operator
+#    tags:
+#      - app-kiali
+#    version: 1.45.0
+#    repository: https://kiali.org/helm-charts
