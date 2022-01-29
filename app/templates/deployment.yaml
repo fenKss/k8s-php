@@ -67,8 +67,15 @@ spec:
         - name: {{ template "app.fullname" . }}-nginx
           configMap:
             name: {{ template "app.fullname" . }}-nginx
+        {{- if .Values.service.develop.enabled }}
+        - name: {{ template "app.fullname" . }}-assets
+          hostPath:
+            path: {{.Values.service.develop.pwd}}
+        {{- else }}
         - name: {{ template "app.fullname" . }}-assets
           emptyDir: { }
+        {{ end }}
+      {{- if not .Values.service.develop.enabled }}
       initContainers:
         - name: {{ template "app.fullname" . }}-assets
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -77,6 +84,7 @@ spec:
           volumeMounts:
             - name: {{ template "app.fullname" . }}-assets
               mountPath: /var/www/app/
+      {{ end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

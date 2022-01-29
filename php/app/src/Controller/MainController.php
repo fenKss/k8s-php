@@ -12,6 +12,6 @@ class MainController extends AbstractController
      */
     public function main(): \Symfony\Component\HttpFoundation\JsonResponse
     {
-        return $this->json([]);
+        return $this->json(['123']);
     }
 }

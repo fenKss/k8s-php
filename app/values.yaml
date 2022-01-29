@@ -12,7 +12,9 @@ image:
 service:
   type: NodePort
   port: 80
-
+  develop:
+    enabled: true
+    pwd: "/hosthome/fenk/projects/apigateway/php/app"
 ingress:
   enabled: true
   className: ""
