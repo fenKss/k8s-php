@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.auth" . }}
+  labels:
+    name: {{ include "app.auth" . }}
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: 0 # Default to 10 if not specified
+  selector:
+    matchLabels:
+      name: {{ include "app.auth" . }}
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        name: {{ include "app.auth" . }}
+        {{- include "app.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.authService.image.repository }}:{{ .Values.authService.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.authService.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+{{/*          livenessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /health*/}}
+{{/*              port: http*/}}
+{{/*          readinessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /health*/}}
+{{/*              port: http*/}}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: {{ template "app.fullname" . }}-assets
+              mountPath: /var/www/app
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "app.fullname" . }}-db
+                  key: DATABASE_URL
+        - name: nginx
+          image: nginx:alpine
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 80
+            name: http
+            protocol: TCP
+          volumeMounts:
+          - name: {{ template "app.fullname" . }}-nginx
+            mountPath: /etc/nginx/conf.d/default.conf
+            subPath: default.conf
+          - name: {{ template "app.fullname" . }}-assets
+            mountPath: /var/www/app
+      volumes:
+        - name: {{ template "app.fullname" . }}-nginx
+          configMap:
+            name: {{ template "app.fullname" . }}-nginx
+        {{- if .Values.authService.develop.enabled }}
+        - name: {{ template "app.fullname" . }}-assets
+          hostPath:
+            path: {{.Values.authService.develop.pwd}}
+        {{- else }}
+        - name: {{ template "app.fullname" . }}-assets
+          emptyDir: { }
+        {{ end }}
+      {{- if not .Values.authService.develop.enabled }}
+      initContainers:
+        - name: {{ template "app.fullname" . }}-assets
+          image: "{{ .Values.authService.image.repository }}:{{ .Values.authService.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: Never
+          command: ['sh', '-c', "cp -rT /tmp/app /var/www/app"]
+          volumeMounts:
+            - name: {{ template "app.fullname" . }}-assets
+              mountPath: /var/www/app/
+      {{ end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

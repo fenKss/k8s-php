@@ -4,19 +4,30 @@
 
 replicaCount: 1
 
-image:
-  repository: php-app
-  tag: "latest"
-  pullPolicy: Never
-
-service:
+mainService:
+  image:
+    repository: php-app
+    tag: "latest"
+    pullPolicy: Never
   type: NodePort
   port: 80
   develop:
     enabled: true
     pwd: "/hosthome/fenk/projects/apigateway/php/app"
+
+authService:
+  image:
+    repository: auth-app
+    tag: "latest"
+    pullPolicy: Never
+  type: ClusterIP
+  port: 80
+  develop:
+    enabled: true
+    pwd: "/hosthome/fenk/projects/apigateway/auth/app"
+
 ingress:
-  enabled: true
+  enabled: false
   className: ""
   annotations:
     kubernetes.io/ingress.class: nginx
@@ -28,14 +39,11 @@ ingress:
         - path: /
           pathType: Prefix
   tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
 
 persistence:
   accessMode: ReadWriteOnce
   enabled: true
-  size: 40Gi
+  size: 5Gi
   storageClass: standard
 
 serviceAccount:
@@ -66,3 +74,16 @@ mysql:
     rootPassword: "1"
     username: "app"
     database: "app"
+
+traefik:
+  providers:
+    kubernetesIngress:
+      enabled: false # Настраиваем маршруты только с помощью CRD (IngressRoute)
+  ports:
+    websecure:
+      expose: false # Выключаем https
+  logs:
+    access:
+      enabled: true
+    general:
+      level: DEBUG

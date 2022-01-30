@@ -2,5 +2,8 @@ dependencies:
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
   version: 8.8.23
-digest: sha256:51f2863ecea8f3c572e63c5664425a99a2b9ea9c952dbe7ba9ef5b3f8edc0acf
-generated: "2022-01-29T14:44:00.126690377+03:00"
+- name: traefik
+  repository: https://helm.traefik.io/traefik
+  version: 10.1.2
+digest: sha256:34697bc51a3163cec28ea2421c49c4db61ae3a368c71bbf5321bb94ade34636c
+generated: "2022-01-30T23:06:16.480397704+03:00"
