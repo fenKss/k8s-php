@@ -25,6 +25,7 @@ security:
             custom_authenticator: App\Security\Authenticator
             logout:
                 path: app_logout
+                delete_cookies: ['PHPSESSID', 'xau']
                 # where to redirect after logout
                 # target: app_any_route
 

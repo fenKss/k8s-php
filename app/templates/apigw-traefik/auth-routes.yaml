@@ -1,16 +1,4 @@
 apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: auth
-spec:
-  forwardAuth:
-    address: http://{{ include "app.auth" .}}.default.svc.cluster.local/auth/traefik
-    authResponseHeaders:
-      - x-username
-      - x-auth-token
-
----
-apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
   name: auth-routes

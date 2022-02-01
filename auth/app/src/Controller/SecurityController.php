@@ -19,7 +19,7 @@ class SecurityController extends AbstractController
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
          if ($user) {
-             $response = (new RedirectResponse($request->query->get('ru')));
+             $response = (new RedirectResponse($request->query->get('ru', '/')));
              $response->headers->add([
                  "x-auth-token" => $user->getAuthToken(),
                  "x-username" => $user->getUserIdentifier(),

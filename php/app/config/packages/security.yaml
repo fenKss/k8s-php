@@ -6,6 +6,10 @@ security:
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         users_in_memory: { memory: null }
+        user_provider:
+            entity:
+                class: App\Entity\User
+                property: authToken
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -13,7 +17,8 @@ security:
         main:
             lazy: true
             provider: users_in_memory
-
+#            custom_authenticators:
+#                - App\Security\Authenticator
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 

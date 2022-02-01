@@ -2,41 +2,51 @@
 
 namespace App\EventSubscriber;
 
-use Symfony\Component\HttpFoundation\RequestStack;
+use ReflectionClass;
+use App\Repository\UserRepository;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class TokenSubscriber implements EventSubscriberInterface
 {
-    private $tokens;    private $stack;
-    public function __construct(RequestStack $requestStack)
+    private $repository;
+    private $container;
+    public function __construct(UserRepository $userRepository, ContainerInterface $container)
     {
-        $this->stack = $requestStack;
+        $this->repository = $userRepository;
+        $this->container = $container;
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function onKernelController(ControllerEvent $event)
     {
-//        $controller = $event->getController();
-//        dd($event->getRequest()->getSession()->all(), $this->stack->getCurrentRequest() );
-//        throw new AccessDeniedHttpException('This action needs a valid token!');
-
-        // when a controller class defines multiple action methods, the controller
-        // is returned as [$controllerInstance, 'methodName']
-//        if (is_array($controller)) {
-//            $controller = $controller[0];
-//        }
-
-//        if ($controller instanceof TokenAuthenticatedController) {
-//            $token = $event->getRequest()->query->get('token');
-//            if (!in_array($token, $this->tokens)) {
-//                throw new AccessDeniedHttpException('This action needs a valid token!');
-//            }
-//        }
+        /** @var \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage $tokenStorage */
+        $tokenStorage = $this->container->get("security.token_storage");
+        if ($tokenStorage->getToken() && $tokenStorage->getToken()->getUser()) {
+            return;
+        }
+        $token = $event->getRequest()->headers->get('x-auth-token');
+        $user = $this->repository->findOneBy([
+            'authToken' => $token
+        ]);
+        if (!$user) {
+            return;
+        }
+        $token = new UsernamePasswordToken($user, $user->getPassword(), $user->getRoles());
+        $tokenStorage->setToken($token);
+        /** @var \Symfony\Component\EventDispatcher\EventDispatcher $eventDispatcher */
+        $eventDispatcher =  $this->container->get("event_dispatcher");
+        $eventDispatcher->dispatch(new InteractiveLoginEvent($event->getRequest(), $token),"security.interactive_login");
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             KernelEvents::CONTROLLER => 'onKernelController',

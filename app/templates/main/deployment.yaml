@@ -89,7 +89,7 @@ spec:
       initContainers:
         - name: {{ template "app.fullname" . }}-assets
           image: "{{ .Values.mainService.image.repository }}:{{ .Values.mainService.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: Never
+          imagePullPolicy: {{ .Values.mainService.image.pullPolicy }}
           command: ['sh', '-c', "cp -rT /tmp/app /var/www/app"]
           volumeMounts:
             - name: {{ template "app.fullname" . }}-assets

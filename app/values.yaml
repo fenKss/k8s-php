@@ -6,9 +6,9 @@ replicaCount: 1
 
 mainService:
   image:
-    repository: php-app
+    repository: fenkss/php-app
     tag: "latest"
-    pullPolicy: Never
+    pullPolicy: Always
   type: NodePort
   port: 80
   develop:
@@ -17,9 +17,9 @@ mainService:
 
 authService:
   image:
-    repository: auth-app
+    repository: fenkss/auth-app
     tag: "latest"
-    pullPolicy: Never
+    pullPolicy: Always
   type: ClusterIP
   port: 80
   develop:

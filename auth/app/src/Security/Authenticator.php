@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,7 +40,7 @@ class Authenticator extends AbstractLoginFormAuthenticator
             new UserBadge($username),
             new PasswordCredentials($request->request->get('password', '')),
             [
-                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
+//                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
             ]
         );
     }
@@ -48,11 +49,12 @@ class Authenticator extends AbstractLoginFormAuthenticator
     {
         /** @var \App\Entity\User $user */
         $user = $token->getUser();
-        $response = (new RedirectResponse($request->query->get('ru')));
+        $response = (new RedirectResponse($request->query->get('ru', '/')));
         $response->headers->add([
             "x-auth-token" => $user->getAuthToken(),
             "x-username" => $user->getUserIdentifier(),
         ]);
+        $response->headers->setCookie(Cookie::create('xau', $user->getAuthToken()));
         return $response;
     }
 
@@ -63,8 +65,9 @@ class Authenticator extends AbstractLoginFormAuthenticator
         if ($request->hasSession()) {
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
         }
-
-        $url = "/auth/".$this->getLoginUrl($request);
+        $redirect_uri = $request->query->get('ru');
+        $host = $request->headers->get('x-forwarded-host');
+        $url = $request->getScheme()."://$host/auth/login?ru=$redirect_uri";
 
         return new RedirectResponse($url);
     }

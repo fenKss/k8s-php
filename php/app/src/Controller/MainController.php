@@ -14,4 +14,12 @@ class MainController extends AbstractController
     {
         return $this->json($request->headers->all());
     }
+
+    /**
+     * @Route("/test", name="test")
+     */
+    public function test(Request $request): Response
+    {
+        return $this->json($request->headers->all());
+    }
 }
