@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "app.main" . }}
+  name: {{ include "app.billing" . }}
   labels:
-    name: {{ include "app.main" . }}
+    name: {{ include "app.billing" . }}
     {{- include "app.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -12,7 +12,7 @@ spec:
   revisionHistoryLimit: 0 # Default to 10 if not specified
   selector:
     matchLabels:
-      name: {{ include "app.main" . }}
+      name: {{ include "app.billing" . }}
       {{- include "app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
@@ -21,7 +21,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        name: {{ include "app.main" . }}
+        name: {{ include "app.billing" . }}
         {{- include "app.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
@@ -35,8 +35,8 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.mainService.image.repository }}:{{ .Values.mainService.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.mainService.image.pullPolicy }}
+          image: "{{ .Values.billingService.image.repository }}:{{ .Values.billingService.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.billingService.image.pullPolicy }}
           ports:
             - name: http
               containerPort: 80
@@ -58,7 +58,7 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "app.fullname" . }}-db
+                  name: {{ template "app.fullname" . }}-secret
                   key: DATABASE_URL
         - name: nginx
           image: nginx:alpine
@@ -77,19 +77,19 @@ spec:
         - name: {{ template "app.fullname" . }}-nginx
           configMap:
             name: {{ template "app.fullname" . }}-nginx
-        {{- if .Values.mainService.develop.enabled }}
+        {{- if .Values.billingService.develop.enabled }}
         - name: {{ template "app.fullname" . }}-assets
           hostPath:
-            path: {{.Values.mainService.develop.pwd}}
+            path: {{.Values.billingService.develop.pwd}}
         {{- else }}
         - name: {{ template "app.fullname" . }}-assets
           emptyDir: { }
         {{ end }}
-      {{- if not .Values.mainService.develop.enabled }}
+      {{- if not .Values.billingService.develop.enabled }}
       initContainers:
         - name: {{ template "app.fullname" . }}-assets
-          image: "{{ .Values.mainService.image.repository }}:{{ .Values.mainService.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.mainService.image.pullPolicy }}
+          image: "{{ .Values.billingService.image.repository }}:{{ .Values.billingService.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.billingService.image.pullPolicy }}
           command: ['sh', '-c', "cp -rT /tmp/app /var/www/app"]
           volumeMounts:
             - name: {{ template "app.fullname" . }}-assets

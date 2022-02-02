@@ -56,8 +56,8 @@ RUN docker-php-ext-install opcache
 RUN pecl install yaml && docker-php-ext-enable yaml
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 RUN pecl install memcached && docker-php-ext-enable memcached
-
-
+RUN apt-get install librdkafka-dev -y;
+RUN pecl install rdkafka && docker-php-ext-enable rdkafka
 RUN pecl install -o -f redis \
     &&  rm -rf /tmp/pear \
     &&  docker-php-ext-enable redis
@@ -76,11 +76,11 @@ RUN chown www-data /var/log/fpm-php.www.log
 
 RUN ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
 
-#RUN addgroup  app
-#RUN adduser --home /var/www/app  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup app app
-#
-#RUN echo "#app without paasword" >> /etc/sudoers
-#RUN echo "app ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN addgroup  billing
+RUN adduser --home /var/www/billing  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup billing billing
+
+RUN echo "#billing without password" >> /etc/sudoers
+RUN echo "billing ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY ./app /tmp/app
 

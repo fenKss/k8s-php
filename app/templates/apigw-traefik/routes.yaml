@@ -17,6 +17,6 @@ spec:
       match: PathPrefix(`/`) # Остальные запросы отправляем в echoserver
       priority: 1 # Traefik сам сортирует роуты по длине и приоритету, так что нм не обязательно сортировать их, как в Istio
       services:
-        - name: {{ include "app.main" .}}
+        - name: {{ include "app.billing" . }}
           namespace: default
           port: 80

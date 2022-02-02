@@ -8,7 +8,7 @@ spec:
       match: PathPrefix(`/`)
       priority: 10 # Добавляем маршрут с большим приоритетом, чтобы эти натсройки применились поверх предыдущих
       services:
-        - name: {{ include "app.main" .}}
+        - name: {{ include "app.billing" . }}
           namespace: default
           port: 80
       middlewares:

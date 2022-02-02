@@ -58,7 +58,7 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "app.fullname" . }}-db
+                  name: {{ template "app.fullname" . }}-secret
                   key: DATABASE_URL
         - name: nginx
           image: nginx:alpine

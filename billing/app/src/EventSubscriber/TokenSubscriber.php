@@ -2,29 +2,24 @@
 
 namespace App\EventSubscriber;
 
-use ReflectionClass;
 use App\Repository\UserRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class TokenSubscriber implements EventSubscriberInterface
 {
-    private $repository;
-    private $container;
+    private UserRepository $repository;
+    private ContainerInterface $container;
     public function __construct(UserRepository $userRepository, ContainerInterface $container)
     {
         $this->repository = $userRepository;
         $this->container = $container;
     }
 
-    /**
-     * @throws \ReflectionException
-     */
     public function onKernelController(ControllerEvent $event)
     {
         /** @var \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage $tokenStorage */

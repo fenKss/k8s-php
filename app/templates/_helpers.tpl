@@ -5,8 +5,14 @@ Expand the name of the chart.
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
-{{- define "app.main" -}}
-{{ include "app.fullname" . }}-main
+{{- define "app.kafka" -}}
+{{ include "app.fullname" . }}-kafka
+{{- end }}
+{{- define "app.db" -}}
+{{ include "app.fullname" . }}-db
+{{- end }}
+{{- define "app.billing" -}}
+{{ include "app.fullname" . }}-billing
 {{- end }}
 {{- define "app.auth" -}}
 {{ include "app.fullname" . }}-auth

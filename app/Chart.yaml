@@ -29,21 +29,11 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     tags:
       - app-database
-#  - name: istiod
-#    version: 1.12.0
-#    repository: https://istio-release.storage.googleapis.com/charts
-#    tags:
-#      - app-istiod
-#  - name: base
-#    version: 1.12.0
-#    repository: https://istio-release.storage.googleapis.com/charts
-#    tags:
-#      - app-istio-base
-#  - name: gateway
-#    version: 1.12.0
-#    repository: https://istio-release.storage.googleapis.com/charts
-#    tags:
-#      - app-istio-gateway
+  - name: kafka
+    version: 15.0.3
+    repository: https://charts.bitnami.com/bitnami
+    tags:
+      - app-kafka
   - name: traefik
     version: 10.1.2
     repository: https://helm.traefik.io/traefik

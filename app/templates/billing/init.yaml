@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "app.fullname" . }}
+  name: {{ include "app.billing" . }}-job
   labels:
   {{- include "app.labels" . | nindent 4 }}
   annotations:
@@ -13,16 +13,16 @@ spec:
     metadata:
       name: {{ include "app.fullname" . }}
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
       containers:
         - name: post-install-job
-          image: {{.Values.mainService.image.repository}}
-          imagePullPolicy: {{.Values.mainService.image.pullPolicy}}
+          image: {{.Values.billingService.image.repository}}
+          imagePullPolicy: {{.Values.billingService.image.pullPolicy}}
           env:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "app.fullname" . }}-db
+                  name: {{ template "app.fullname" . }}-secret
                   key: DATABASE_URL
           command:
             - sh

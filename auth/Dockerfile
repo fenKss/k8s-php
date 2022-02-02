@@ -76,11 +76,11 @@ RUN chown www-data /var/log/fpm-php.www.log
 
 RUN ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
 
-#RUN addgroup  app
-#RUN adduser --home /var/www/app  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup app app
-#
-#RUN echo "#app without paasword" >> /etc/sudoers
-#RUN echo "app ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN addgroup  auth
+RUN adduser --home /var/www/app  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup auth auth
+
+RUN echo "#auth without password" >> /etc/sudoers
+RUN echo "auth ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY ./app /tmp/app
 

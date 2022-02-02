@@ -88,6 +88,9 @@
     "nikic/php-parser": {
         "version": "v4.13.2"
     },
+    "nmred/kafka-php": {
+        "version": "v0.1.6"
+    },
     "psr/cache": {
         "version": "1.0.1"
     },
