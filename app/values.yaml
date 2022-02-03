@@ -73,3 +73,9 @@ traefik:
 
 kafka:
   fullnameOverride: "app-kafka"
+  auth:
+    sasl:
+      jaas:
+        clientPasswords: [
+        123
+        ]

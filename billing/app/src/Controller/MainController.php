@@ -1,5 +1,8 @@
 <?php
+
 namespace App\Controller;
+
+use App\Repository\NotificationRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -16,10 +19,25 @@ class MainController extends AbstractController
     }
 
     /**
-     * @Route("/test", name="test")
+     * @Route("/notifications", name="test")
      */
-    public function test(Request $request): Response
-    {
-        return $this->json($request->headers->all());
+    public function test(
+        Request $request,
+        NotificationRepository $notificationRepository
+    ): Response {
+        $notifications = $notificationRepository->findAll();
+        $responseData  = [];
+        foreach ($notifications as $notification) {
+            $responseData[] = [
+                'id' => $notification->getId(),
+                'message' => $notification->getMessage(),
+                'user' => [
+                    'id' => $notification->getUser()->getId(),
+                    'token' => $notification->getUser()->getAuthToken(),
+                ],
+            ];
+        }
+
+        return $this->json($responseData);
     }
 }

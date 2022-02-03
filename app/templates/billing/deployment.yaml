@@ -41,14 +41,6 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-{{/*          livenessProbe:*/}}
-{{/*            httpGet:*/}}
-{{/*              path: /health*/}}
-{{/*              port: http*/}}
-{{/*          readinessProbe:*/}}
-{{/*            httpGet:*/}}
-{{/*              path: /health*/}}
-{{/*              port: http*/}}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -60,6 +52,21 @@ spec:
                 secretKeyRef:
                   name: {{ template "app.fullname" . }}-secret
                   key: DATABASE_URL
+            - name: KAFKA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "app.fullname" . }}-secret
+                  key: KAFKA_URL
+            - name: KAFKA_SASL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "app.fullname" . }}-secret
+                  key: KAFKA_SASL_USERNAME
+            - name: KAFKA_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "app.fullname" . }}-secret
+                  key: KAFKA_SASL_PASSWORD
         - name: nginx
           image: nginx:alpine
           imagePullPolicy: Always

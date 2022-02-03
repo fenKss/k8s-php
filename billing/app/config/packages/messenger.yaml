@@ -1,0 +1,22 @@
+framework:
+    messenger:
+        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
+        # failure_transport: failed
+        transports:
+            producer:
+                dsn: '%env(KAFKA_URL)%'
+                # serializer: App\Infrastructure\Messenger\MySerializer
+                options:
+                    flushTimeout: 10000
+                    flushRetries: 5
+                    topic:
+                        name: 'events'
+                    kafka_conf:
+                        security.protocol: 'sasl_ssl'
+                        ssl.ca.location: '%kernel.project_dir%/config/kafka/ca.pem'
+                        sasl.username: '%env(KAFKA_SASL_USERNAME)%'
+                        sasl.password: '%env(KAFKA_SASL_PASSWORD)%'
+                        sasl.mechanisms: 'SCRAM-SHA-256'
+        routing:
+            # Route your messages to the transports
+            # 'App\Message\YourMessage': async
