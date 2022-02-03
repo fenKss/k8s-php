@@ -18,26 +18,4 @@ class MainController extends AbstractController
         return $this->json($request->headers->all());
     }
 
-    /**
-     * @Route("/notifications", name="test")
-     */
-    public function test(
-        Request $request,
-        NotificationRepository $notificationRepository
-    ): Response {
-        $notifications = $notificationRepository->findAll();
-        $responseData  = [];
-        foreach ($notifications as $notification) {
-            $responseData[] = [
-                'id' => $notification->getId(),
-                'message' => $notification->getMessage(),
-                'user' => [
-                    'id' => $notification->getUser()->getId(),
-                    'token' => $notification->getUser()->getAuthToken(),
-                ],
-            ];
-        }
-
-        return $this->json($responseData);
-    }
 }

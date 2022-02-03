@@ -11,6 +11,17 @@ billingService:
     enabled: true
     pwd: "/hosthome/fenk/projects/k8s/k8s-php/billing/app"
 
+notificationService:
+  image:
+    repository: notification-app
+    tag: "latest"
+    pullPolicy: Never
+  type: ClusterIP
+  port: 80
+  develop:
+    enabled: true
+    pwd: "/hosthome/fenk/projects/k8s/k8s-php/notification/app"
+
 authService:
   image:
     repository: auth-app

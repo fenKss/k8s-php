@@ -38,4 +38,5 @@ istioctl dashboard kiali
 
 ```shell
 kafka-console-producer --broker-list app-kafka:9092 --property key.separator=, --property parse.key=true --topic
+>1,{"__event":"Send", "user_token":"1c4845a2-b4d6-459f-8d43-30d71e84f1e0", "message": "Test message"}
 ```

@@ -14,6 +14,9 @@ Expand the name of the chart.
 {{- define "app.billing" -}}
 {{ include "app.fullname" . }}-billing
 {{- end }}
+{{- define "app.notification" -}}
+{{ include "app.fullname" . }}-notification
+{{- end }}
 {{- define "app.auth" -}}
 {{ include "app.fullname" . }}-auth
 {{- end }}
