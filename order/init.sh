@@ -1,0 +1,1 @@
+php-fpm -R -D && php /tmp/app/bin/console kafka:listen

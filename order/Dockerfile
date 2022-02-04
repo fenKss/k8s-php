@@ -56,8 +56,8 @@ RUN docker-php-ext-install opcache
 RUN pecl install yaml && docker-php-ext-enable yaml
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 RUN pecl install memcached && docker-php-ext-enable memcached
-
-
+RUN apt-get install librdkafka-dev -y;
+RUN pecl install rdkafka && docker-php-ext-enable rdkafka
 RUN pecl install -o -f redis \
     &&  rm -rf /tmp/pear \
     &&  docker-php-ext-enable redis
@@ -76,14 +76,16 @@ RUN chown www-data /var/log/fpm-php.www.log
 
 RUN ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
 
-RUN addgroup  auth
-RUN adduser --home /var/www/app  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup auth auth
+RUN addgroup  notification
+RUN adduser --home /var/www/notification  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup notification notification
 
-RUN echo "#auth without password" >> /etc/sudoers
-RUN echo "auth ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN echo "#notification without password" >> /etc/sudoers
+RUN echo "notification ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY ./app /tmp/app
+COPY ./init.sh /tmp/init.sh
+RUN chmod 777 /tmp/init.sh
+RUN chmod +X /tmp/init.sh
 
 EXPOSE 9000
-ENTRYPOINT ["php-fpm", "-R"]
-
+ENTRYPOINT ["sh", "-C", "/tmp/init.sh"]

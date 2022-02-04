@@ -2,16 +2,20 @@ replicaCount: 1
 
 orderService:
   image:
-    repository: billing-app
+    repository: order-app
     tag: "latest"
     pullPolicy: Never
   type: NodePort
   port: 80
   develop:
     enabled: true
-    pwd: "/hosthome/fenk/projects/k8s/k8s-php/billing/app"
+    pwd: "/hosthome/fenk/projects/k8s/k8s-php/order/app"
   database: order
-
+  env:
+  - name: DATABASE_URL
+    key: ORDER_DATABASE_URL
+  - name: KAFKA_URL
+    key: KAFKA_URL
 billingService:
   image:
     repository: billing-app
@@ -26,6 +30,8 @@ billingService:
   env:
     - name: DATABASE_URL
       key: BILLING_DATABASE_URL
+    - name: KAFKA_URL
+      key: KAFKA_URL
 notificationService:
   image:
     repository: notification-app

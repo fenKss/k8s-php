@@ -19,6 +19,9 @@ Expand the name of the chart.
 {{- define "app.notification" -}}
 {{ include "app.fullname" . }}-notification
 {{- end }}
+{{- define "app.order" -}}
+{{ include "app.fullname" . }}-order
+{{- end }}
 {{- define "app.auth" -}}
 {{ include "app.fullname" . }}-auth
 {{- end }}
