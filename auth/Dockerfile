@@ -86,3 +86,5 @@ COPY ./app /tmp/app
 
 EXPOSE 9000
 ENTRYPOINT ["php-fpm", "-R"]
+
+1,{"__event":"Send", "user_token":"b896ad78-de0b-42b9-981d-970526d20947", "message": "Test message"}

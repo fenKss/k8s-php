@@ -6,7 +6,7 @@ use App\Events\Event;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-class NotificationsHandler
+class BillingHandler
 {
     private UserRepository         $repository;
     private EntityManagerInterface $entityManager;
