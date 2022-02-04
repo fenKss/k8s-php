@@ -1,5 +1,17 @@
 replicaCount: 1
 
+orderService:
+  image:
+    repository: billing-app
+    tag: "latest"
+    pullPolicy: Never
+  type: NodePort
+  port: 80
+  develop:
+    enabled: true
+    pwd: "/hosthome/fenk/projects/k8s/k8s-php/billing/app"
+  database: order
+
 billingService:
   image:
     repository: billing-app
@@ -10,7 +22,10 @@ billingService:
   develop:
     enabled: true
     pwd: "/hosthome/fenk/projects/k8s/k8s-php/billing/app"
-
+  database: billing
+  env:
+    - name: DATABASE_URL
+      key: BILLING_DATABASE_URL
 notificationService:
   image:
     repository: notification-app
@@ -21,6 +36,12 @@ notificationService:
   develop:
     enabled: true
     pwd: "/hosthome/fenk/projects/k8s/k8s-php/notification/app"
+  database: notifications
+  env:
+    - name: DATABASE_URL
+      key: NOTIFICATIONS_DATABASE_URL
+    - name: KAFKA_URL
+      key: KAFKA_URL
 
 authService:
   image:
@@ -32,6 +53,10 @@ authService:
   develop:
     enabled: true
     pwd: "/hosthome/fenk/projects/k8s/k8s-php/auth/app"
+  database: auth
+  env:
+    - name: DATABASE_URL
+      key: AUTH_DATABASE_URL
 
 persistence:
   accessMode: ReadWriteOnce
@@ -67,8 +92,6 @@ mysql:
     password: "1"
     rootPassword: "1"
     username: "app"
-    database: "app"
-
 traefik:
   providers:
     kubernetesIngress:

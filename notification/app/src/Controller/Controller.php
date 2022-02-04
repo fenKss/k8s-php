@@ -25,12 +25,13 @@ class Controller extends AbstractController
 
     public function getUser(): ?User
     {
-        $token = $this->request->headers->get('x-auth-token');
-        if (!$token) {
-            return null;
-        }
-        return $this->userRepository->findOneBy([
-            'authToken' => $token,
-        ]);
+        return parent::getUser();
+//        $token = $this->request->headers->get('x-auth-token');
+//        if (!$token) {
+//            return null;
+//        }
+//        return $this->userRepository->findOneBy([
+//            'authToken' => $token,
+//        ]);
     }
 }

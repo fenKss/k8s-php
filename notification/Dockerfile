@@ -76,11 +76,11 @@ RUN chown www-data /var/log/fpm-php.www.log
 
 RUN ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
 
-RUN addgroup  billing
-RUN adduser --home /var/www/billing  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup billing billing
+RUN addgroup  notification
+RUN adduser --home /var/www/notification  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup notification notification
 
-RUN echo "#billing without password" >> /etc/sudoers
-RUN echo "billing ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN echo "#notification without password" >> /etc/sudoers
+RUN echo "notification ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY ./app /tmp/app
 

@@ -47,26 +47,13 @@ spec:
             - name: {{ template "app.fullname" . }}-assets
               mountPath: /var/www/app
           env:
-            - name: DATABASE_URL
+          {{- range $key, $value := .Values.billingService.env }}
+            - name: {{ $value.name }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "app.fullname" . }}-secret
-                  key: DATABASE_URL
-            - name: KAFKA_URL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "app.fullname" . }}-secret
-                  key: KAFKA_URL
-            - name: KAFKA_SASL_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "app.fullname" . }}-secret
-                  key: KAFKA_SASL_USERNAME
-            - name: KAFKA_SASL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "app.fullname" . }}-secret
-                  key: KAFKA_SASL_PASSWORD
+                  key: {{ $value.key }}
+                  name: {{- include "app.secret" $ | indent 4 }}
+          {{- end }}
         - name: nginx
           image: nginx:alpine
           imagePullPolicy: Always

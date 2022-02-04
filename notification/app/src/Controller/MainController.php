@@ -21,8 +21,7 @@ class MainController extends AbstractController
     /**
      * @Route("/notifications", name="test")
      */
-    public function test(
-        Request $request,
+    public function notifications(
         NotificationRepository $notificationRepository
     ): Response {
         $notifications = $notificationRepository->findAll();

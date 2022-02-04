@@ -6,25 +6,27 @@ metadata:
   {{- include "app.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": post-install
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-failed,hook-succeeded
 spec:
-  backoffLimit: 10
-  activeDeadlineSeconds: 60
+  backoffLimit: 100
   template:
     metadata:
       name: {{ include "app.fullname" . }}
     spec:
-      restartPolicy: OnFailure
+      restartPolicy: Never
       containers:
         - name: post-install-job
           image: {{.Values.notificationService.image.repository}}
           imagePullPolicy: {{.Values.notificationService.image.pullPolicy}}
           env:
-            - name: DATABASE_URL
+          {{- range $key, $value := .Values.notificationService.env }}
+            - name: {{ $value.name }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ template "app.fullname" . }}-secret
-                  key: DATABASE_URL
+                  key: {{ $value.key }}
+                  name: {{- include "app.secret" $ | indent 4 }}
+          {{- end }}
           command:
             - sh
             - "-c"
-            - php /tmp/app/bin/console doctrine:migrations:migrate --quiet
+            - {{ printf "mycli %s -e \"create database if not exists %s\" && php /tmp/app/bin/console doctrine:migrations:migrate --quiet" ( printf (include "db.url" .) "" ) .Values.notificationService.database }}

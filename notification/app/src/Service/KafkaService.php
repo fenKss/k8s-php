@@ -76,8 +76,6 @@ class KafkaService
     {
         $this->config = new Conf();
 
-        $host        = $_ENV['APP_KAFKA_SERVICE_HOST'];
-        $port        = $_ENV['APP_KAFKA_SERVICE_PORT'];
         $configArray = [
             'group.id' => 'group_1',
             'metadata.broker.list' => $_ENV["KAFKA_URL"],
@@ -89,7 +87,6 @@ class KafkaService
         }
 
         $this->initTopicConf();
-
         $this->initRebalanceCb();
     }
 

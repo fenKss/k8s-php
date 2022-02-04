@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Symfony\Component\Uid\UuidV4;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -13,7 +14,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @UniqueEntity(fields={"username"}, message="There is already an account with this username")
+ * @UniqueEntity(fields={"username"}, message="There is already an account with this
+ *     username")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -27,20 +29,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      */
-    private $username;
+    private string $username;
 
     /**
      * @ORM\Column(type="json")
      */
-    private $roles = [];
+    private array $roles = [];
 
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
      */
-    private $password;
+    private string $password;
 
     /**
+     * @var string|UuidV4
      * @ORM\Column(type="guid")
      */
     private $authToken;
@@ -48,18 +51,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $firstName;
+    private ?string $firstName;
 
     /**
-     * @ORM\OneToMany(targetEntity=Notification::class, mappedBy="user")
+     * @ORM\Column(type="float")
      */
-    private $notifications;
+    private ?float $money = 0;
 
 
     public function __construct()
     {
         $this->authToken = Uuid::v4();
-        $this->notifications = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -72,7 +74,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUsername(): string
     {
-        return (string) $this->username;
+        return (string)$this->username;
     }
 
     public function setUsername(string $username): self
@@ -89,7 +91,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->username;
+        return (string)$this->username;
     }
 
     /**
@@ -153,7 +155,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setAuthToken(string $authToken): self
     {
-        $this->authToken = $authToken;
+        $this->authToken = UuidV4::fromString($authToken);
 
         return $this;
     }
@@ -170,32 +172,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection|Notification[]
-     */
-    public function getNotifications(): Collection
+    public function getMoney(): ?float
     {
-        return $this->notifications;
+        return $this->money;
     }
 
-    public function addNotification(Notification $notification): self
+    public function setMoney(float $money): self
     {
-        if (!$this->notifications->contains($notification)) {
-            $this->notifications[] = $notification;
-            $notification->setUser($this);
-        }
+        $this->money = $money;
 
         return $this;
     }
 
-    public function removeNotification(Notification $notification): self
+    public function increaseMoney(float $money): self
     {
-        if ($this->notifications->removeElement($notification)) {
-            // set the owning side to null (unless already changed)
-            if ($notification->getUser() === $this) {
-                $notification->setUser(null);
-            }
+        $this->money += $money;
+
+        return $this;
+    }
+
+    public function decreaseMoney(float $money): self
+    {
+        $result = $this->money - $money;
+        if ($result < 0) {
+            throw new \LogicException('User money can\'t be < 0 ');
         }
+        $this->money = $result;
 
         return $this;
     }

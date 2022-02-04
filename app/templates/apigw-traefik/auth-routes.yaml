@@ -5,6 +5,15 @@ metadata:
 spec:
   routes:
     - kind: Rule
+      match: PathPrefix(`/notification`)
+      services:
+        - name: {{ include "app.notification" . }}
+          namespace: default
+          port: 80
+      middlewares:
+        - name: auth # Включаем forward-auth
+          namespace: default
+    - kind: Rule
       match: PathPrefix(`/`)
       priority: 10 # Добавляем маршрут с большим приоритетом, чтобы эти натсройки применились поверх предыдущих
       services:

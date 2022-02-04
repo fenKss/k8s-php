@@ -2,7 +2,7 @@
 
 namespace App\EventSubscriber;
 
-use App\Repository\UserRepository;
+use App\Service\UserService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -12,12 +12,13 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class TokenSubscriber implements EventSubscriberInterface
 {
-    private UserRepository $repository;
     private ContainerInterface $container;
-    public function __construct(UserRepository $userRepository, ContainerInterface $container)
+    private UserService        $userService;
+
+    public function __construct(UserService $userService, ContainerInterface $container)
     {
-        $this->repository = $userRepository;
-        $this->container = $container;
+        $this->container   = $container;
+        $this->userService = $userService;
     }
 
     public function onKernelController(ControllerEvent $event)
@@ -27,18 +28,22 @@ class TokenSubscriber implements EventSubscriberInterface
         if ($tokenStorage->getToken() && $tokenStorage->getToken()->getUser()) {
             return;
         }
-        $token = $event->getRequest()->headers->get('x-auth-token');
-        $user = $this->repository->findOneBy([
-            'authToken' => $token
-        ]);
-        if (!$user) {
+        $headers = $event->getRequest()->headers;
+        $token   = $headers->get('x-auth-token');
+        if (!$token) {
             return;
         }
-        $token = new UsernamePasswordToken($user, $user->getPassword(), $user->getRoles());
+        $username = $headers->get('x-username');
+        $user     = $this->userService->getUser($token, $username);
+        $token    = new UsernamePasswordToken(
+            $user,
+            $user->getPassword(),
+            $user->getRoles()
+        );
         $tokenStorage->setToken($token);
         /** @var \Symfony\Component\EventDispatcher\EventDispatcher $eventDispatcher */
-        $eventDispatcher =  $this->container->get("event_dispatcher");
-        $eventDispatcher->dispatch(new InteractiveLoginEvent($event->getRequest(), $token),"security.interactive_login");
+        $eventDispatcher = $this->container->get("event_dispatcher");
+        $eventDispatcher->dispatch(new InteractiveLoginEvent($event->getRequest(), $token), "security.interactive_login");
     }
 
     public static function getSubscribedEvents(): array

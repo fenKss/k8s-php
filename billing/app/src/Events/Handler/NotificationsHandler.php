@@ -3,7 +3,6 @@
 namespace App\Events\Handler;
 
 use App\Events\Event;
-use App\Entity\Notification;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -32,9 +31,8 @@ class NotificationsHandler
         if (!$user) {
             return;
         }
-        $notification = new Notification();
-        $notification->setMessage($event->get('message'))->setUser($user);
-        $this->entityManager->persist($notification);
+//        $user->setMoney();
+        $this->entityManager->persist($user);
         $this->entityManager->flush();
     }
 }

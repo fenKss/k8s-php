@@ -4,7 +4,9 @@ Expand the name of the chart.
 {{- define "app.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
-
+{{- define "app.secret" -}}
+{{ include "app.fullname" . }}-secret
+{{- end }}
 {{- define "app.kafka" -}}
 {{ include "app.fullname" . }}-kafka
 {{- end }}
@@ -20,6 +22,11 @@ Expand the name of the chart.
 {{- define "app.auth" -}}
 {{ include "app.fullname" . }}-auth
 {{- end }}
+
+{{- define "db.url"}}{{- printf "mysql://%s:%s@%s:%s/%s?appVersion=5.7" "root" .Values.mysql.auth.rootPassword .Values.mysql.fullnameOverride (.Values.mysql.primary.service.port|toString) "%s" }}{{- end }}
+{{/*{{- define "db.url"}}*/}}
+{{/*{{- printf "mysql://%s:%s@%s:%s/%s?appVersion=5.7" .Values.mysql.auth.username .Values.mysql.auth.password .Values.mysql.fullnameOverride (.Values.mysql.primary.service.port|toString) "%s" }}*/}}
+{{/*{{- end }}*/}}
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
