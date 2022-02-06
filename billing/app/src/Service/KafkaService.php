@@ -3,8 +3,10 @@
 namespace App\Service;
 
 use Exception;
+use Throwable;
 use RdKafka\Conf;
 use App\Events\Event;
+use RdKafka\Producer;
 use RdKafka\TopicConf;
 use RdKafka\KafkaConsumer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -31,6 +33,13 @@ class KafkaService
         return new KafkaConsumer($this->getConf());
     }
 
+    public function getProducer(): Producer
+    {
+        $producer = new Producer($this->getConf());
+        $producer->setLogLevel(LOG_DEBUG);
+        return $producer;
+    }
+
     /**
      * @throws \RdKafka\Exception
      */
@@ -55,12 +64,20 @@ class KafkaService
                     $this->log('sleep');
                     break;
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
-                    //$this->log($message->errstr());
+//                    $this->log($message->errstr());
                     break;
                 default:
                     throw new Exception($message->errstr(), $message->err);
             }
         }
+    }
+
+    public function send(string $topic, string $data, ?string $key)
+    {
+        $producer = $this->getProducer();
+        $topic = $producer->newTopic($topic, $this->getTopicConf());
+        $topic->produce(RD_KAFKA_PARTITION_UA, 0, $data, $key);
+        $producer->flush(10000);
     }
 
     private function log($string)
@@ -76,8 +93,6 @@ class KafkaService
     {
         $this->config = new Conf();
 
-        $host        = $_ENV['APP_KAFKA_SERVICE_HOST'];
-        $port        = $_ENV['APP_KAFKA_SERVICE_PORT'];
         $configArray = [
             'group.id' => 'group_1',
             'metadata.broker.list' => $_ENV["KAFKA_URL"],
@@ -89,7 +104,6 @@ class KafkaService
         }
 
         $this->initTopicConf();
-
         $this->initRebalanceCb();
     }
 
@@ -140,7 +154,7 @@ class KafkaService
             $event->setTopic($topic);
             $method = lcfirst($event->getName())."Event";
             $this->getController($event)->$method($event);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->log($e->getMessage());
             return;
         }
@@ -165,5 +179,17 @@ class KafkaService
         $nameSpace = "App\\Events\\Handler\\{$topicName}Handler";
 
         return $this->container->get($nameSpace);
+    }
+
+    /**
+     * @return \RdKafka\TopicConf
+     */
+    private function getTopicConf(): TopicConf
+    {
+        $topicConf = new TopicConf();
+        // -1 должен ждать, пока все посредники завершат подтверждение синхронизации 1 текущее подтверждение сервера 0 не подтверждает, здесь, если смещение в обратном вызове 0 не возвращено, если оно равно 1 и -1 вернет смещение
+        // Мы можем использовать этот механизм для подтверждения производства сообщения, но это не 100%, потому что сервер kafka может зависнуть на полпути
+        $topicConf->set('request.required.acks', 0);
+        return $topicConf;
     }
 }

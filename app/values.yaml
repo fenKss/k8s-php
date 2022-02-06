@@ -2,29 +2,29 @@ replicaCount: 1
 
 orderService:
   image:
-    repository: order-app
+    repository: fenkss/order-app
     tag: "latest"
-    pullPolicy: Never
+    pullPolicy: Always
   type: NodePort
   port: 80
   develop:
-    enabled: true
+    enabled: false
     pwd: "/hosthome/fenk/projects/k8s/k8s-php/order/app"
   database: order
   env:
-  - name: DATABASE_URL
-    key: ORDER_DATABASE_URL
-  - name: KAFKA_URL
-    key: KAFKA_URL
+    - name: DATABASE_URL
+      key: ORDER_DATABASE_URL
+    - name: KAFKA_URL
+      key: KAFKA_URL
 billingService:
   image:
-    repository: billing-app
+    repository: fenkss/billing-app
     tag: "latest"
-    pullPolicy: Never
+    pullPolicy: Always
   type: NodePort
   port: 80
   develop:
-    enabled: true
+    enabled: false
     pwd: "/hosthome/fenk/projects/k8s/k8s-php/billing/app"
   database: billing
   env:
@@ -34,13 +34,13 @@ billingService:
       key: KAFKA_URL
 notificationService:
   image:
-    repository: notification-app
+    repository: fenkss/notification-app
     tag: "latest"
-    pullPolicy: Never
+    pullPolicy: Always
   type: ClusterIP
   port: 80
   develop:
-    enabled: true
+    enabled: false
     pwd: "/hosthome/fenk/projects/k8s/k8s-php/notification/app"
   database: notifications
   env:
@@ -51,13 +51,13 @@ notificationService:
 
 authService:
   image:
-    repository: auth-app
+    repository: fenkss/auth-app
     tag: "latest"
-    pullPolicy: Never
+    pullPolicy: Always
   type: ClusterIP
   port: 80
   develop:
-    enabled: true
+    enabled: false
     pwd: "/hosthome/fenk/projects/k8s/k8s-php/auth/app"
   database: auth
   env:
@@ -113,9 +113,32 @@ traefik:
 
 kafka:
   fullnameOverride: "app-kafka"
+  zookeeper:
+#    nameOverride: "app-zookeeper"
+  autoCreateTopicsEnable: true
+  provisioning:
+    topics: [ 'order', 'notifications', 'billing' ]
   auth:
     sasl:
       jaas:
         clientPasswords: [
           123
         ]
+kafkaTopicCreator:
+  jobName: kafka-topic-creator
+  helmHook: post-install
+  kafka:
+    topics:
+      - name: order
+        replicationFactor: 1
+        partitions: 1
+      - name: notifications
+        replicationFactor: 1
+        partitions: 1
+      - name: billing
+        replicationFactor: 1
+        partitions: 1
+  zookeeper:
+    address: app-zookeeper:2181
+  imagePullSecrets:
+    - name: regcred

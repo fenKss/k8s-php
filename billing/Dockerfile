@@ -83,6 +83,9 @@ RUN echo "#billing without password" >> /etc/sudoers
 RUN echo "billing ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY ./app /tmp/app
+COPY ./init.sh /tmp/init.sh
+RUN chmod 777 /tmp/init.sh
+RUN chmod +X /tmp/init.sh
 
 EXPOSE 9000
-ENTRYPOINT ["php-fpm", "-R"]
+ENTRYPOINT ["sh", "-C", "/tmp/init.sh"]

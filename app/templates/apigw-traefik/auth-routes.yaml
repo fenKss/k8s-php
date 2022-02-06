@@ -5,6 +5,15 @@ metadata:
 spec:
   routes:
     - kind: Rule
+      match: PathPrefix(`/auth`) # Запросы с префиксом /auth отправляем в auth-service
+      services:
+        - name: {{ include "app.auth" .}}
+          namespace: default
+          port: 80
+      middlewares:
+        - name: strip-auth-prefix # Убираем префикс из пути, чтобы запросы шли на корень сервиса
+          namespace: default
+    - kind: Rule
       match: PathPrefix(`/notification`)
       services:
         - name: {{ include "app.notification" . }}

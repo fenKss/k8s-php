@@ -4,19 +4,21 @@ namespace App\Events\Handler;
 
 use App\Events\Event;
 use App\Entity\Notification;
+use App\Service\UserService;
+use App\Service\KafkaService;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class NotificationsHandler
 {
-    private UserRepository         $repository;
+    private UserService            $userService;
     private EntityManagerInterface $entityManager;
 
     public function __construct(
-        UserRepository $repository,
+        UserService $userService,
         EntityManagerInterface $entityManager
     ) {
-        $this->repository    = $repository;
+        $this->userService   = $userService;
         $this->entityManager = $entityManager;
     }
 
@@ -24,14 +26,9 @@ class NotificationsHandler
     {
         $userToken = $event->get('user_token');
         if (!$userToken) {
-            return;
+            throw new \Exception("User token not found");
         }
-        $user = $this->repository->findOneBy([
-            'authToken' => $userToken,
-        ]);
-        if (!$user) {
-            return;
-        }
+        $user = $this->userService->getUser($userToken);
         $notification = new Notification();
         $notification->setMessage($event->get('message'))->setUser($user);
         $this->entityManager->persist($notification);

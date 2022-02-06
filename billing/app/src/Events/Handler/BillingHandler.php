@@ -2,37 +2,59 @@
 
 namespace App\Events\Handler;
 
+use App\Entity\User;
 use App\Events\Event;
+use App\Service\UserService;
+use App\Service\KafkaService;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class BillingHandler
 {
-    private UserRepository         $repository;
+    private UserService            $userService;
     private EntityManagerInterface $entityManager;
+    private KafkaService           $kafkaService;
 
     public function __construct(
-        UserRepository $repository,
-        EntityManagerInterface $entityManager
+        UserService $userService,
+        EntityManagerInterface $entityManager,
+        KafkaService $kafkaService
     ) {
-        $this->repository    = $repository;
+        $this->userService   = $userService;
         $this->entityManager = $entityManager;
+        $this->kafkaService  = $kafkaService;
     }
 
-    public function sendEvent(Event $event)
+    /**
+     * @throws \Exception
+     */
+    public function moneyDecreaseEvent(Event $event)
     {
         $userToken = $event->get('user_token');
+        $orderId   = $event->get('order_id');
         if (!$userToken) {
-            return;
+            throw new \Exception('User Token not found');
         }
-        $user = $this->repository->findOneBy([
-            'authToken' => $userToken,
-        ]);
-        if (!$user) {
-            return;
+        $money = $event->get('money');
+        if (!$money || $money <= 0) {
+            throw new \Exception("Invalid money $money");
         }
-//        $user->setMoney();
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+        $user  = $this->userService->getUser($userToken);
+        $event = [
+            "__event" => "HandleOrderBilling",
+            "order_id" => $orderId,
+            'status' => 1,
+        ];
+
+        try {
+            $user->decreaseMoney($money);
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+        } catch (\Exception $e) {
+            $event['status'] = 0;
+        } finally {
+            $this->kafkaService->send('order', json_encode($event), $orderId);
+        }
+
     }
 }

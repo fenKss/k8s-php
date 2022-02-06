@@ -76,11 +76,11 @@ RUN chown www-data /var/log/fpm-php.www.log
 
 RUN ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime
 
-RUN addgroup  notification
-RUN adduser --home /var/www/notification  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup notification notification
+RUN addgroup  order
+RUN adduser --home /var/www/order  --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password --ingroup order order
 
-RUN echo "#notification without password" >> /etc/sudoers
-RUN echo "notification ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN echo "#order without password" >> /etc/sudoers
+RUN echo "order ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 COPY ./app /tmp/app
 COPY ./init.sh /tmp/init.sh

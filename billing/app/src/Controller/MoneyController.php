@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\KafkaService;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -52,10 +53,26 @@ class MoneyController extends AbstractController
     }
 
     /**
-     * @Route("/money", )
+     * @Route("/money", name="checkMoney")
      */
     public function check( ): Response
     {
        return $this->json(['money' => $this->getUser()->getMoney()]);
     }
+    /**
+     * @Route("/money/test", name="tests")
+     */
+    public function test(KafkaService $kafkaService): Response
+    {
+        $orderId = 1;
+        $event = [
+            "__event" => "HandleOrderBilling",
+            "order_id" => $orderId,
+            'status' => 0,
+        ];
+        $kafkaService->send('order', json_encode($event), $orderId);
+        return new Response('sent');
+    }
+
+
 }
