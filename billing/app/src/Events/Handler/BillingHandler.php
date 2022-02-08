@@ -40,6 +40,7 @@ class BillingHandler
             throw new \Exception("Invalid money $money");
         }
         $user  = $this->userService->getUser($userToken);
+        $currentMoney = $event->get('current_money');
         $event = [
             "__event" => "HandleOrderBilling",
             "order_id" => $orderId,
@@ -47,11 +48,16 @@ class BillingHandler
         ];
 
         try {
+            if (!is_null($currentMoney) && (float)$user->getMoney() !== (float)$currentMoney){
+                throw new \Exception("Message already processed".(float)$user->getMoney(). " ".(float)$currentMoney );
+            }
+            sleep(2);
             $user->decreaseMoney($money);
             $this->entityManager->persist($user);
             $this->entityManager->flush();
         } catch (\Exception $e) {
             $event['status'] = 0;
+            $event['reason'] = $e->getMessage();
         } finally {
             $this->kafkaService->send('order', json_encode($event), $orderId);
         }

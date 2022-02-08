@@ -1,68 +1,92 @@
 replicaCount: 1
 
-orderService:
+authService:
+  name: auth
   image:
-    repository: fenkss/order-app
+    repository: fenkss/auth-app
     tag: "latest"
-    pullPolicy: Always
-  type: NodePort
+    pullPolicy: Never
+  type: ClusterIP
   port: 80
   develop:
-    enabled: false
-    pwd: "/hosthome/fenk/projects/k8s/k8s-php/order/app"
-  database: order
+    enabled: true
+    pwd: "/hosthome/fenk/projects/k8s/k8s-php-saga/auth/app"
+  database: auth
   env:
     - name: DATABASE_URL
-      key: ORDER_DATABASE_URL
-    - name: KAFKA_URL
-      key: KAFKA_URL
+      key: AUTH_DATABASE_URL
+
 billingService:
+  name: billing
   image:
     repository: fenkss/billing-app
     tag: "latest"
-    pullPolicy: Always
+    pullPolicy: Never
   type: NodePort
   port: 80
   develop:
-    enabled: false
-    pwd: "/hosthome/fenk/projects/k8s/k8s-php/billing/app"
+    enabled: true
+    pwd: "/hosthome/fenk/projects/k8s/k8s-php-saga/billing/app"
   database: billing
   env:
     - name: DATABASE_URL
       key: BILLING_DATABASE_URL
     - name: KAFKA_URL
       key: KAFKA_URL
-notificationService:
+
+deliveryService:
+  name: delivery
   image:
-    repository: fenkss/notification-app
+    repository: delivery-app
     tag: "latest"
-    pullPolicy: Always
-  type: ClusterIP
+    pullPolicy: Never
+  type: NodePort
   port: 80
   develop:
-    enabled: false
-    pwd: "/hosthome/fenk/projects/k8s/k8s-php/notification/app"
-  database: notifications
+    enabled: true
+    pwd: "/hosthome/fenk/projects/k8s/k8s-php-saga/delivery/app"
+  database: delivery
   env:
     - name: DATABASE_URL
-      key: NOTIFICATIONS_DATABASE_URL
+      key: DELIVERY_DATABASE_URL
     - name: KAFKA_URL
       key: KAFKA_URL
 
-authService:
+orderService:
+  name: order
   image:
-    repository: fenkss/auth-app
+    repository: fenkss/order-app
     tag: "latest"
-    pullPolicy: Always
+    pullPolicy: Never
+  type: NodePort
+  port: 80
+  develop:
+    enabled: true
+    pwd: "/hosthome/fenk/projects/k8s/k8s-php-saga/order/app"
+  database: order
+  env:
+    - name: DATABASE_URL
+      key: ORDER_DATABASE_URL
+    - name: KAFKA_URL
+      key: KAFKA_URL
+
+storeService:
+  name: store
+  image:
+    repository: store-app
+    tag: "latest"
+    pullPolicy: Never
   type: ClusterIP
   port: 80
   develop:
-    enabled: false
-    pwd: "/hosthome/fenk/projects/k8s/k8s-php/auth/app"
-  database: auth
+    enabled: true
+    pwd: "/hosthome/fenk/projects/k8s/k8s-php-saga/store/app"
+  database: store
   env:
     - name: DATABASE_URL
-      key: AUTH_DATABASE_URL
+      key: STORE_DATABASE_URL
+    - name: KAFKA_URL
+      key: KAFKA_URL
 
 persistence:
   accessMode: ReadWriteOnce
@@ -71,12 +95,8 @@ persistence:
   storageClass: standard
 
 serviceAccount:
-  # Specifies whether a service account should be created
   create: true
-  # Annotations to add to the service account
   annotations: { }
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
   name: ""
 
 autoscaling:
@@ -98,6 +118,7 @@ mysql:
     password: "1"
     rootPassword: "1"
     username: "app"
+
 traefik:
   providers:
     kubernetesIngress:
@@ -114,16 +135,17 @@ traefik:
 kafka:
   fullnameOverride: "app-kafka"
   zookeeper:
-#    nameOverride: "app-zookeeper"
+  #    nameOverride: "app-zookeeper"
   autoCreateTopicsEnable: true
   provisioning:
-    topics: [ 'order', 'notifications', 'billing' ]
+    topics: [ 'order', 'store', 'billing' ]
   auth:
     sasl:
       jaas:
         clientPasswords: [
           123
         ]
+
 kafkaTopicCreator:
   jobName: kafka-topic-creator
   helmHook: post-install
@@ -132,7 +154,7 @@ kafkaTopicCreator:
       - name: order
         replicationFactor: 1
         partitions: 1
-      - name: notifications
+      - name: store
         replicationFactor: 1
         partitions: 1
       - name: billing

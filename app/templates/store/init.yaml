@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "app.store" . }}-job
+  labels:
+  {{- include "app.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-failed,hook-succeeded
+spec:
+  backoffLimit: 100
+  template:
+    metadata:
+      name: {{ include "app.fullname" . }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-job
+          image: {{.Values.storeService.image.repository}}
+          imagePullPolicy: {{.Values.storeService.image.pullPolicy}}
+          env:
+          {{- range $key, $value := .Values.storeService.env }}
+            - name: {{ $value.name }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ $value.key }}
+                  name: {{- include "app.secret" $ | indent 4 }}
+          {{- end }}
+          command:
+            - sh
+            - "-c"
+            - {{ printf "mycli %s -e \"create database if not exists %s\" && php /tmp/app/bin/console doctrine:migrations:migrate --quiet" ( printf (include "db.url" .) "" ) .Values.storeService.database }}

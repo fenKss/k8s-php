@@ -13,17 +13,20 @@ Expand the name of the chart.
 {{- define "app.db" -}}
 {{ include "app.fullname" . }}-db
 {{- end }}
+{{- define "app.auth" -}}
+{{ include "app.fullname" . }}-auth
+{{- end }}
 {{- define "app.billing" -}}
 {{ include "app.fullname" . }}-billing
 {{- end }}
-{{- define "app.notification" -}}
-{{ include "app.fullname" . }}-notification
+{{- define "app.delivery" -}}
+{{ include "app.fullname" . }}-delivery
 {{- end }}
 {{- define "app.order" -}}
 {{ include "app.fullname" . }}-order
 {{- end }}
-{{- define "app.auth" -}}
-{{ include "app.fullname" . }}-auth
+{{- define "app.store" -}}
+{{ include "app.fullname" . }}-store
 {{- end }}
 
 {{- define "db.url"}}{{- printf "mysql://%s:%s@%s:%s/%s?appVersion=5.7" "root" .Values.mysql.auth.rootPassword .Values.mysql.fullnameOverride (.Values.mysql.primary.service.port|toString) "%s" }}{{- end }}
