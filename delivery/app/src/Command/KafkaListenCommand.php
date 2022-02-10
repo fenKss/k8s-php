@@ -36,7 +36,7 @@ class KafkaListenCommand extends Command
         $io   = new SymfonyStyle($input, $output);
         $arg1 = $input->getArgument('arg1');
 
-        $this->kafka->listen(['order']);
+        $this->kafka->listen(['delivery']);
         return Command::SUCCESS;
     }
 }

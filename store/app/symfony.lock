@@ -85,6 +85,9 @@
     "laminas/laminas-code": {
         "version": "4.5.1"
     },
+    "myclabs/php-enum": {
+        "version": "1.8.3"
+    },
     "nikic/php-parser": {
         "version": "v4.13.2"
     },
@@ -301,6 +304,9 @@
         "version": "v5.4.3"
     },
     "symfony/security-http": {
+        "version": "v5.4.3"
+    },
+    "symfony/serializer": {
         "version": "v5.4.3"
     },
     "symfony/service-contracts": {
