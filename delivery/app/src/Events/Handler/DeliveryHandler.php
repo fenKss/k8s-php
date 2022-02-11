@@ -3,25 +3,23 @@
 namespace App\Events\Handler;
 
 use App\Events\Event;
+use Psr\Log\LoggerInterface;
 use App\Service\KafkaService;
-use App\Repository\UserRepository;
-use App\Repository\OrderRepository;
 use App\Repository\CourierRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\Log\Logger;
 
 class DeliveryHandler
 {
     private EntityManagerInterface $entityManager;
     private KafkaService           $kafkaService;
-    private Logger                 $logger;
+    private LoggerInterface        $logger;
     private CourierRepository      $repository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         CourierRepository $repository,
         KafkaService $kafkaService,
-        Logger $logger
+        LoggerInterface $logger
     ) {
         $this->entityManager = $entityManager;
         $this->kafkaService  = $kafkaService;
@@ -32,13 +30,13 @@ class DeliveryHandler
     public function reserveCourierEvent(Event $event)
     {
         try {
-            $orderId = $event->get('order_id');
+            $orderId   = $event->get('order_id');
             $productId = $event->get('product_id');
             if (!$orderId) {
                 throw new \Exception("Property order_id not found");
             }
             if (!$productId) {
-                throw new \Exception("Property order_id not found");
+                throw new \Exception("Property product_id not found");
             }
             $courier = $this->repository->getFirstFree();
             if (!$courier) {
@@ -50,10 +48,12 @@ class DeliveryHandler
         } catch (\Throwable $e) {
             $this->logger->error($e->getMessage());
             $data = [
-                "__event" => 'unreserveProductEvent',
-                'error' => $e->getMessage(),
+                "__event" => 'unreserveProduct',
+                'error' => $e->getMessage(). $e->getFile(). $e->getLine(),
                 'order_id' => $orderId,
                 'product_id' => $productId,
+                "money" => $event->get('money'),
+                "user_token" => $event->get('user_token'),
             ];
             $this->kafkaService->send('store', json_encode($data), $orderId);
         }

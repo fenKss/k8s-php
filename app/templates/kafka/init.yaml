@@ -6,7 +6,8 @@ metadata:
     release: {{ .Release.Name }}
   annotations:
     "helm.sh/hook": {{ .Values.kafkaTopicCreator.helmHook }}
-    "helm.sh/weight": "1000"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-failed,hook-succeeded
+    "helm.sh/hook-weight": "-1"
 spec:
   # Cancel job if it has not finished after 3 minutes
   activeDeadlineSeconds: 180

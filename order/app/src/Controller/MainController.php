@@ -26,6 +26,7 @@ class MainController extends AbstractController
             $data[] = [
                 'id' => $order->getId(),
                 'money' => $order->getMoney(),
+                'status' => $order->getStatus(),
                 'user' => [
                     'token' => $order->getUser()->getAuthToken(),
                 ],
@@ -44,27 +45,32 @@ class MainController extends AbstractController
         HttpClientInterface $client
     ): Response {
         $money = (float)$request->get('money');
+        $productId = $request->get('product_id');
         if (!$money || $money <= 0) {
-            return new Response("Bad Request", Response::HTTP_BAD_REQUEST);
+            return new Response("Bad money Request", Response::HTTP_BAD_REQUEST);
+        }
+        if (!$productId){
+            return new Response("Bad  product_id", Response::HTTP_BAD_REQUEST);
         }
         /** @var User $user */
         $user  = $this->getUser();
-        $order = (new Order())->setUser($user)->setMoney($money);
+        $order = (new Order())->setUser($user)->setMoney($money)->setStatus(1);
         $em->persist($order);
         $em->flush();
         $currentMoney = $this->getMoney($request, $client);
         $event = [
-            '__event' => "moneyDecrease",
+            '__event' => "orderCreate",
             'user_token' => $user->getAuthToken(),
             'money' => $money,
             'order_id' => $order->getId(),
+            'product_id' => $productId,
         ];
         if ($currentMoney){
             $event['current_money'] = $currentMoney;
         }
         $event = json_encode($event);
         $kafkaService->send('billing', $event, $order->getId());
-        return $this->redirectToRoute('est');
+        return $this->json(['id' => $order->getId()]);
     }
 
     /**

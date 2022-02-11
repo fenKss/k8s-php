@@ -66,7 +66,7 @@ class MoneyController extends AbstractController
     {
         $orderId = 1;
         $event = [
-            "__event" => "HandleOrderBilling",
+            "__event" => "HandleOrder",
             "order_id" => $orderId,
             'status' => 0,
         ];

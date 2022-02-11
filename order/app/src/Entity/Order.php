@@ -29,6 +29,11 @@ class Order
      */
     private $money = 0;
 
+    /**
+     * @ORM\Column(type="smallint")
+     */
+    private $status;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -54,6 +59,18 @@ class Order
     public function setMoney(float $money): self
     {
         $this->money = $money;
+
+        return $this;
+    }
+
+    public function getStatus(): ?int
+    {
+        return $this->status;
+    }
+
+    public function setStatus(int $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

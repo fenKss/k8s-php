@@ -22,7 +22,7 @@ class CourierRepository extends ServiceEntityRepository
     public function getFirstFree(): ?Courier
     {
         return $this->createQueryBuilder('c')
-                    ->where('c.isReserved == false')
+                    ->where('c.isReserved = 0')
                     ->setMaxResults(1)
                     ->getQuery()
                     ->getOneOrNullResult();

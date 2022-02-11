@@ -30,8 +30,7 @@ class OrderHandler
         $this->orderRepository = $orderRepository;
     }
 
-
-    public function handleOrderBillingEvent(Event $event)
+    public function handleOrderEvent(Event $event)
     {
         $status  = $event->get('status') ?? false;
         $orderId = $event->get('order_id');
@@ -39,16 +38,8 @@ class OrderHandler
             throw new \Exception('Order id not found');
         }
         $order = $this->orderRepository->find($orderId);
-        if ($status) {
-            $eventData = [
-                '__event' => 'Send',
-                'message' => "Order $orderId was processed",
-                'user_token' => $order->getUser()->getAuthToken(),
-            ];
-            $this->kafkaService->send('notifications', json_encode($eventData), null);
-        } else {
-            throw new \Exception("Status is not true. Order id $orderId");
-        }
-
+        $order->setStatus($status);
+        $this->entityManager->persist($order);
+        $this->entityManager->flush();
     }
 }

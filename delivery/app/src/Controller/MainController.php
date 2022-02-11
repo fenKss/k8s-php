@@ -17,8 +17,12 @@ class MainController extends AbstractController
     /**
      * @Route("/test", name="est")
      */
-    public function test(): Response
+    public function test(CourierRepository $repository, EntityManagerInterface $entityManager): Response
     {
+        $courier = $repository->getFirstFree();
+        $courier->setIsReserved(true)->setOrderId(1);
+        $entityManager->persist($courier);
+        $entityManager->flush();
         return $this->json(['delivery']);
     }
 

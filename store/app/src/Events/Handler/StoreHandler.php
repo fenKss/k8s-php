@@ -4,6 +4,7 @@ namespace App\Events\Handler;
 
 use App\Events\Event;
 use App\Enum\EProductStatus;
+use Psr\Log\LoggerInterface;
 use App\Service\KafkaService;
 use App\Repository\UserRepository;
 use App\Repository\OrderRepository;
@@ -16,13 +17,13 @@ class StoreHandler
     private ProductRepository      $repository;
     private EntityManagerInterface $entityManager;
     private KafkaService           $kafkaService;
-    private Logger           $logger;
+    private LoggerInterface           $logger;
 
     public function __construct(
         ProductRepository $repository,
         EntityManagerInterface $entityManager,
         KafkaService $kafkaService,
-        Logger $logger
+        LoggerInterface $logger
     ) {
         $this->repository    = $repository;
         $this->entityManager = $entityManager;
@@ -51,13 +52,19 @@ class StoreHandler
             $data = [
                 "__event" => 'ReserveCourier',
                 "order_id" => $orderId,
+                "product_id" => $productId,
+                "money" => $event->get('money'),
+                "user_token" => $event->get('user_token'),
             ];
             $this->kafkaService->send('delivery', json_encode($data), $orderId);
         } catch (\Throwable $e) {
             $this->logger->error($e->getMessage());
             $data = [
-                "__event" => 'RejectOrder',
+                "__event" => 'IncreaseMoney',
+                "money" => $event->get('money'),
+                "user_token" => $event->get('user_token'),
                 'error' => $e->getMessage(),
+                'status' => 0,
                 'order_id' => $orderId,
             ];
             $this->kafkaService->send('billing', json_encode($data), $orderId);
@@ -80,18 +87,23 @@ class StoreHandler
             $this->entityManager->persist($product);
             $this->entityManager->flush();
             $data = [
-                "__event" => 'RejectOrder',
+                "__event" => 'IncreaseMoney',
                 'order_id' => $orderId,
+                "money" => $event->get('money'),
+                "user_token" => $event->get('user_token'),
+                'status' => 0,
+                'reason' => 'unreserve'
             ];
             $this->kafkaService->send('billing', json_encode($data), $orderId);
         } catch (\Throwable $e) {
                 $this->logger->error($e->getMessage());
+                throw $e;
 //            $data = [
-//                "__event" => 'RejectOrder',
+//                "__event" => 'HandleOrder',
 //                'error' => $e->getMessage(),
 //                'order_id' => $orderId,
 //            ];
-//            $this->kafkaService->send('billing', json_encode($data), $orderId);
+//            $this->kafkaService->send('order', json_encode($data), $orderId);
         }
     }
 
